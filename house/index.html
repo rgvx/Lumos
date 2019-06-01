@@ -1,0 +1,120 @@
+<html>
+  <head>
+      <meta charset="UTF-8"/>
+    <title> Real Estate in Virtual Reality - Lumos </title>
+    <style>
+      body { margin: 0; background-color: black;}
+      canvas { width: 100%; height: 100% }
+    </style>
+    <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.conversejs.org/4.2.0/css/converse.min.css">
+    <script src="https://cdn.conversejs.org/4.2.0/dist/converse.min.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.103.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leapjs@0.6.4/leap-0.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/controls/LeapTwoHandControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/MTLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/OBJLoader.js"></script>
+
+    <script>
+      var container , camera , scene, renderer , stats, light;
+      var controller , controls, orbcontrols;
+      init();
+      animate();
+      function init(){
+        controller = new Leap.Controller();
+
+        light = new THREE.DirectionalLight('#ffffff', 2);
+        light.position.set(0, 0, 100);
+        scene = new THREE.Scene();
+        scene.add( light );
+            const skyColor = 0xB1E1FF; // light blue
+        const groundColor = 0xB97A20; // brownish orange
+        const intensity = 1;
+
+        const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity);
+        scene.add(light2);
+        camera = new THREE.PerspectiveCamera(
+          75 ,
+          window.innerWidth / window.innerHeight,
+          1 ,
+          5000
+        );
+        container = document.getElementById( 'container' );
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+            var geometry = new THREE.CubeGeometry( 250, 250, 250 );
+    var cubeMaterials = [
+      new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("posx.jpg"), side: THREE.DoubleSide}),
+      new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("negx.jpg"), side: THREE.DoubleSide}),
+      new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("posy.jpg"), side: THREE.DoubleSide}),
+      new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("negy.jpg"), side: THREE.DoubleSide}),
+      new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("posz.jpg"), side: THREE.DoubleSide}),
+      new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("negz.jpg"), side: THREE.DoubleSide})
+    ];
+    var cubeMaterial = new THREE.MeshFaceMaterial( cubeMaterials );
+    var cube = new THREE.Mesh( geometry, cubeMaterial );
+    scene.add( cube );
+    var geometry = new THREE.BoxGeometry( 0.01, 0.01, 0.01 );
+    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    var cube2 = new THREE.Mesh( geometry, material );
+    scene.add( cube2 );
+
+        var objLoader = new THREE.OBJLoader();
+        var mtlLoader = new THREE.MTLLoader();
+        var mesh = null;
+        var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.load( 'house.mtl', function( materials ) {
+
+          materials.preload();
+
+          var objLoader = new THREE.OBJLoader();
+          objLoader.setMaterials( materials );
+          objLoader.load( 'house.obj', function ( object ) {
+
+            mesh = object;
+            mesh.position.y = -10;
+            scene.add( mesh );
+
+          } );
+
+        } );
+
+
+
+
+
+        controller.connect();
+        //camera.position.x = 1;
+        //camera.position.y = 10;
+        camera.position.z = 50;
+        console.log( camera );
+        controls = new THREE.LeapTwoHandControls( camera , controller, scene );
+        controls.translationSpeed   = 0.05;
+        controls.translationDecay   = 0.1;
+        controls.scaleDecay         = 0.3;
+        controls.rotationSlerp      = 0.5;
+        controls.rotationSpeed      = 0.4;
+        controls.pinchThreshold     = 0.3;
+        controls.transSmoothing     = 0.3;
+        controls.rotationSmoothing  = 0.1;
+        orbcontrols = new THREE.OrbitControls( camera , renderer.domElement );
+      }
+      function animate(){
+        controls.update();
+        renderer.render( scene , camera );
+        requestAnimationFrame( animate );
+      }
+      animate();
+
+      //Render loop
+            converse.initialize({
+          bosh_service_url: 'https://conversejs.org/http-bind/', // Please use this connection manager only for testing purposes
+          show_controlbox_by_default: true
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+<html>
+<head>
+	<meta charset="UTF-8"/>
+	<style>
+	  body {margin: 0;} /*make sure canvas cover the entire browser*/
+	  canvas {width: 100%; height: 100%;}
+	</style>
+	<title>
+		Skybox of a Museum - Lumos
+	</title>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.103.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/controls/LeapPointerControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/rgvx/leapcontrols/leap.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.conversejs.org/4.2.0/css/converse.min.css">
+	<script src="https://cdn.conversejs.org/4.2.0/dist/converse.min.js" charset="utf-8"></script>
+</head>
+<body>
+<script>
+	  var camera , scene, renderer, orbcontrols;
+      var controller , controls;
+      var controls2;
+
+	  init();
+      animate();
+
+      function init(){
+
+        var w     = window.innerWidth;
+        var h     = window.innerHeight;
+
+        scene     = new THREE.Scene();
+        camera    = new THREE.PerspectiveCamera( 50 , w / h , 1 , 5000 );
+        //camera.position.x = 100;
+        //camera.position.y = ;
+        camera.position.z = -125;
+        renderer  = new THREE.WebGLRenderer();
+
+
+        renderer.setSize( w , h );
+        document.body.appendChild( renderer.domElement );
+        var orbcontrols = new THREE.OrbitControls(camera, renderer.domElement);
+        orbcontrols.enableKeys = false;
+        orbcontrols.enablePan = false;
+        orbcontrols.enableZoom = true;
+        orbcontrols.enableDamping = false;
+        orbcontrols.enableRotate = true;
+
+        {
+        const skyColor = 0xB1E1FF; // light blue
+        const groundColor = 0xB97A20; // brownish orange
+        const intensity = 1;
+        const light = new THREE.HemisphereLight(skyColor, groundColor, intensity);
+        scene.add(light);
+        }
+        {
+          const color = 0xFFFFFF;
+          const intensity = 1;
+          const light = new THREE.DirectionalLight(color, intensity);
+          light.position.set(5, 10, 2);
+          scene.add(light);
+          scene.add(light.target);
+        }
+          {
+        controller = new Leap.Controller();
+        controller.connect();
+
+        controls = new THREE.LeapPointerControls( camera , controller );
+        controls.size       = 100;
+        controls.speed      = .04;
+        controls.dampening  = .99;
+        controls.target     = new THREE.Vector3( 0 , 10 , 0 );
+      }
+      
+      var geometry = new THREE.CubeGeometry( 250, 250, 250 );
+	  var cubeMaterials = [
+	    new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("posx.jpg"), side: THREE.DoubleSide}),
+	    new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("negx.jpg"), side: THREE.DoubleSide}),
+	    new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("posy.jpg"), side: THREE.DoubleSide}),
+	    new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("negy.jpg"), side: THREE.DoubleSide}),
+	    new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("posz.jpg"), side: THREE.DoubleSide}),
+	    new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader( ).load("negz.jpg"), side: THREE.DoubleSide})
+		];
+	var cubeMaterial = new THREE.MeshFaceMaterial( cubeMaterials );
+	var cube = new THREE.Mesh( geometry, cubeMaterial );
+	scene.add( cube );
+	var geometry = new THREE.BoxGeometry( 0.01, 0.01, 0.01 );
+	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+	var cube2 = new THREE.Mesh( geometry, material );
+	scene.add( cube2 );
+}
+
+      function animate(){
+        requestAnimationFrame( animate );
+        controls.update();
+        renderer.render( scene , camera );
+      }
+      converse.initialize({
+          bosh_service_url: 'https://conversejs.org/http-bind/', // Please use this connection manager only for testing purposes
+          show_controlbox_by_default: true
+      });
+    </script>
+  </body>
+</html>
